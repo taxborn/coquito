@@ -5,7 +5,7 @@
 #include "reader.h"
 
 char* read_file(char* path) {
-    FILE *file;
+    FILE* file;
 
     if ((file = fopen(path, "r")) == NULL) {
         free(file);
@@ -20,7 +20,7 @@ char* read_file(char* path) {
 
     printf("[INFO] End position of '%s' was %d.\n", path, file_size);
 
-    char *buffer = (char *)malloc(file_size);
+    char* buffer = (char*) malloc(file_size);
     
     // read the file into the buffer
     int ret = fread(buffer, sizeof(*buffer), file_size, file);
@@ -32,7 +32,9 @@ char* read_file(char* path) {
 
     // TODO: Check if UTF-8 file, and we can do that by checking the BOM (Byte order mark). For 
     // UTF-8, this is the codepoints (U+FEFF, 0xEFBBBF (?)), skip those if present.
-    // This would involve checking the first 3 bytes for the U+FEFF codepoint. If tha is present, 
+    // This would involve checking the first 3 bytes for the U+FEFF codepoint.
+    //
+    // 3 bytes needed for the U+FEFF check, then another 3 bytes for 0xEFBBBF.
     //
     // if (starts_with_utf8_bom(path))
     //     ... parse UTF-8 codepoints

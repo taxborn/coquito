@@ -9,11 +9,10 @@ void print_usage(char* executable) {
     printf("[ERROR] Incorrect number of arguments passed.\n");
     printf("[USAGE] %s <file.cq>\n", executable);
 
-    // Exit with an error
+    // Exit with an error.
     // TODO: Automatically go for main.cq? Seems unexpected but *could* be nice?
     exit(EXIT_FAILURE);
 }
-
 
 int main(int argc, char** argv) {
     // Check if the correct number of arguments were passed.
