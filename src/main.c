@@ -1,5 +1,8 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "file/reader.h"
 
 void print_usage(char* executable) {
     // TODO: argument parsing options
@@ -11,6 +14,7 @@ void print_usage(char* executable) {
     exit(EXIT_FAILURE);
 }
 
+
 int main(int argc, char** argv) {
     // Check if the correct number of arguments were passed.
     // TODO: argument parsing
@@ -18,6 +22,9 @@ int main(int argc, char** argv) {
 
     char* file_name = argv[1];
     printf("[INFO] Starting compilation of '%s'.\n", file_name);
+
+    char* contents = read_file(file_name);
+    printf("[INFO] read '%s'.\n", contents);
 
     return 0;
 }
