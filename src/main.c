@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,10 +21,8 @@ int main(int argc, char** argv) {
     if (argc != 2) print_usage(argv[0]);
 
     char* file_name = argv[1];
+    char* contents = read_file(file_name);
     printf("[INFO] Starting compilation of '%s'.\n", file_name);
 
-    char* contents = read_file(file_name);
-    printf("[INFO] read '%s'.\n", contents);
-
-    return 0;
+    return EXIT_SUCCESS;
 }
