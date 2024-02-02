@@ -17,18 +17,22 @@ enum Token {
     LBrace,
     RBrace,
     Semi,
+    Comma,
+    Colon,
 
     // Math
-    Plus,
-    Minus,
-    Star,
+    Add,
+    Sub,
+    Mul,
     Div,
     Eq,
 
     Identifier(String),
+    Number(String),
 
     // Keywords
     If,
+    Else,
 }
 
 impl<'a> Lexer<'a> {
@@ -80,11 +84,36 @@ impl<'a> Lexer<'a> {
                 self.input.next();
                 return Some(Token::Semi);
             }
-            Some(' ' | '\n' | '\t') =>  {
+            Some('+') => {
+                self.input.next();
+                return Some(Token::Add);
+            }
+            Some('-') => {
+                self.input.next();
+                return Some(Token::Sub);
+            }
+            Some('*') => {
+                self.input.next();
+                return Some(Token::Mul);
+            }
+            Some('/') => {
+                self.input.next();
+                return Some(Token::Div);
+            }
+            Some(',') => {
+                self.input.next();
+                return Some(Token::Comma);
+            }
+            Some(':') => {
+                self.input.next();
+                return Some(Token::Colon);
+            }
+            Some(chr) if chr.is_whitespace() => {
                 self.input.next();
                 return self.next_token();
             }
-            Some('a'..='z') => return self.parse_identifier(),
+            Some(chr) if chr.is_alphabetic() => return self.parse_identifier(),
+            Some(chr) if chr.is_numeric() => return self.parse_number(),
             // Unknown tokens
             Some(_) | None => None,
         };
@@ -93,16 +122,45 @@ impl<'a> Lexer<'a> {
     fn parse_identifier(&mut self) -> Option<Token> {
         let mut output = String::new();
         while let Some(chr) = self.input.peek() {
-            if !chr.is_alphanumeric() { break; }
+            if !chr.is_alphanumeric() {
+                break;
+            }
 
             output.push(self.input.next()?);
         }
 
+        // TODO: Should these be hard tokens?
         if output.eq_ignore_ascii_case("if") {
             return Some(Token::If);
+        } else if output.eq_ignore_ascii_case("else") {
+            return Some(Token::Else);
         }
 
         return Some(Token::Identifier(output));
+    }
+
+    fn parse_number(&mut self) -> Option<Token> {
+        let mut output = String::new();
+        let mut is_float = false;
+
+        // TODO: There has gotta be a better way than this
+        while let Some(chr) = self.input.peek() {
+            if matches!(chr, '.') && is_float {
+                panic!("Can't have two '.' in a numeric");
+            }
+
+            if !chr.is_numeric() && !matches!(chr, '.') {
+                break;
+            }
+
+            if matches!(chr, '.') {
+                is_float = true;
+            }
+
+            output.push(self.input.next()?);
+        }
+
+        return Some(Token::Number(output));
     }
 }
 
