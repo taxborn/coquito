@@ -1,3 +1,4 @@
 func main() : int = {
-
+    let a : int = 5; // test
+    let b : float = 5.0; 
 }
