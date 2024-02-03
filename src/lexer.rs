@@ -5,7 +5,7 @@ pub struct Lexer<'a> {
     input: Peekable<Chars<'a>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Token {
     // Symbols
     LParen,
@@ -137,7 +137,6 @@ impl<'a> Lexer<'a> {
             return Some(Token::Return);
         }
 
-
         return Some(Token::Identifier(ident));
     }
 
@@ -174,5 +173,26 @@ impl<'a> Lexer<'a> {
         }
 
         return self.next_token();
+    }
+}
+
+impl<'a> Iterator for Lexer<'a> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        return self.next_token();
+    }
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_single_line_comment() {
+        let lx = Lexer::new("a//this is a test\na");
+        let toks: Vec<Token> = lx.collect();
+        let expected = vec![Token::Identifier("a".to_string()), Token::Identifier("a".to_string())];
+
+        assert_eq!(toks, expected);
     }
 }
