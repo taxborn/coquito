@@ -31,6 +31,7 @@ pub enum Token {
     // Keywords
     If,
     Else,
+    Return,
 }
 
 impl<'a> Lexer<'a> {
@@ -132,7 +133,10 @@ impl<'a> Lexer<'a> {
             return Some(Token::If);
         } else if ident.eq_ignore_ascii_case("else") {
             return Some(Token::Else);
+        } else if ident.eq_ignore_ascii_case("return") {
+            return Some(Token::Return);
         }
+
 
         return Some(Token::Identifier(ident));
     }

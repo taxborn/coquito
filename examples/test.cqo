@@ -1,4 +1,12 @@
 func main() : int = {
     let a : int = 5; // test
     let b : float = 5.0; 
+
+    if a == 5 {
+	a += 1;
+    } else {
+	b += 2.0;
+    }
+
+    return a;
 }
