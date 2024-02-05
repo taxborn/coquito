@@ -17,6 +17,7 @@ pub enum Token {
     Semi,
     Comma,
     Colon,
+    Underscore,
 
     // Math
     Add,
@@ -47,81 +48,62 @@ impl<'a> Lexer<'a> {
 
     pub fn next_token(&mut self) -> Option<Token> {
         return match self.input.peek() {
-            Some('(') => {
+            Some('(') => self.lex_token(Token::LParen),
+            Some(')') => self.lex_token(Token::RParen),
+            Some('{') => self.lex_token(Token::LBracket),
+            Some('}') => self.lex_token(Token::RBracket),
+            Some('[') => self.lex_token(Token::LBrace),
+            Some(']') => self.lex_token(Token::RBrace),
+            Some('=') => self.lex_token(Token::Eq),
+            Some(';') => self.lex_token(Token::Semi),
+            Some(',') => self.lex_token(Token::Comma),
+            Some(':') => self.lex_token(Token::Colon),
+            Some('_') => {
                 self.input.next();
-                return Some(Token::LParen);
+                return match self.input.peek() {
+                    Some(chr) if chr.is_alphanumeric() => {
+                        return self.parse_identifier(true);
+                    }
+                    Some(_) | None => self.lex_token(Token::Underscore),
+                };
             }
-            Some(')') => {
-                self.input.next();
-                return Some(Token::RParen);
-            }
-            Some('{') => {
-                self.input.next();
-                return Some(Token::LBracket);
-            }
-            Some('}') => {
-                self.input.next();
-                return Some(Token::RBracket);
-            }
-            Some('[') => {
-                self.input.next();
-                return Some(Token::LBrace);
-            }
-            Some(']') => {
-                self.input.next();
-                return Some(Token::RBrace);
-            }
-            Some('=') => {
-                self.input.next();
-                return Some(Token::Eq);
-            }
-            Some(';') => {
-                self.input.next();
-                return Some(Token::Semi);
-            }
-            Some('+') => {
-                self.input.next();
-                return Some(Token::Add);
-            }
-            Some('-') => {
-                self.input.next();
-                return Some(Token::Sub);
-            }
-            Some('*') => {
-                self.input.next();
-                return Some(Token::Mul);
-            }
+            Some('+') => self.lex_token(Token::Add),
+            Some('-') => self.lex_token(Token::Sub),
+            Some('*') => self.lex_token(Token::Mul),
             Some('/') => {
                 self.input.next();
 
                 return match self.input.peek() {
                     Some('/') => return self.parse_comment(),
-                    Some(_) | None => Some(Token::Div)
-                }
-            }
-            Some(',') => {
-                self.input.next();
-                return Some(Token::Comma);
-            }
-            Some(':') => {
-                self.input.next();
-                return Some(Token::Colon);
+                    Some(_) | None => self.lex_token(Token::Div),
+                };
             }
             Some(chr) if chr.is_whitespace() => {
                 self.input.next();
                 return self.next_token();
             }
-            Some(chr) if chr.is_alphabetic() => return self.parse_identifier(),
+            Some(chr) if chr.is_alphabetic() => return self.parse_identifier(false),
             Some(chr) if chr.is_numeric() => return self.parse_number(),
             // Unknown tokens
             Some(_) | None => None,
         };
     }
 
-    fn parse_identifier(&mut self) -> Option<Token> {
-        let mut ident = String::new();
+    #[inline]
+    fn lex_token(&mut self, token: Token) -> Option<Token> {
+        let _ = self.input.next();
+        return Some(token);
+    }
+
+    fn parse_identifier(&mut self, private: bool) -> Option<Token> {
+        let mut ident = if private {
+            String::from("_")
+        } else {
+            String::new()
+        };
+
         while let Some(chr) = self.input.peek() {
-            if !chr.is_alphanumeric() {
+            if !chr.is_alphanumeric() && !matches!(chr, '_') {
                 break;
             }
 
@@ -184,6 +166,7 @@ impl<'a> Iterator for Lexer<'a> {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -191,7 +174,24 @@ mod tests {
     fn test_single_line_comment() {
         let lx = Lexer::new("a//this is a test\na");
         let toks: Vec<Token> = lx.collect();
-        let expected = vec![Token::Identifier("a".to_string()), Token::Identifier("a".to_string())];
+        let expected = vec![
+            Token::Identifier("a".to_string()),
+            Token::Identifier("a".to_string()),
+        ];
+
+        assert_eq!(toks, expected);
+    }
+
+    #[test]
+    fn test_identifier_parsing() {
+        let lx = Lexer::new("func f_unc func_ _func");
+        let toks: Vec<Token> = lx.collect();
+        let expected = vec![
+            Token::Identifier("func".to_string()),
+            Token::Identifier("f_unc".to_string()),
+            Token::Identifier("func_".to_string()),
+            Token::Identifier("_func".to_string()),
+        ];
 
         assert_eq!(toks, expected);
     }
