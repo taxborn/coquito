@@ -6,7 +6,7 @@ pub struct Lexer<'a> {
     pub input: &'a str,
     /// Peekable lookahead to make decisions about multi-character lexemes
     lookahead: Peekable<Chars<'a>>,
-    /// The current position in the input
+    /// Holds the position of the next unread character
     // TODO: Convert this to keep track of line/column
     position: usize,
 }
@@ -21,7 +21,7 @@ impl<'a> Lexer<'a> {
         Self {
             input,
             lookahead: input.chars().peekable(),
-            position: 0
+            position: 0,
         }
     }
 
@@ -40,10 +40,40 @@ impl<'a> Lexer<'a> {
 
         Some(chr)
     }
+
+    /// Accumulate while a predicate is true
+    pub fn accumulate_while(&mut self, predicate: &dyn Fn(char) -> bool) -> &str {
+        let mut size = 0;
+
+        while let Some(&chr) = self.lookahead.peek() {
+            // we want to continue looping while the predicate is true, if it
+            // is false, we will break from the loop.
+            if !predicate(chr) {
+                break;
+            }
+
+            // increment the size by the utf-8 length, otherwise sometimes we
+            // can index 'half-way' into a character, which could have weird
+            // consequences.
+            size += chr.len_utf8();
+            self.lookahead.next();
+        }
+
+        // Increase the position
+        self.position += size;
+        // Split the input at the specified size
+        let (accumulated, rest) = self.input.split_at(size);
+        // Consume the accumulated characters
+        self.input = rest;
+        // Return the output
+        accumulated
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::lexer::is_valid_id;
+
     use super::*;
 
     #[test]
@@ -61,5 +91,33 @@ mod tests {
         assert_eq!(chr, Some('+'));
         assert_eq!(lx.input, "-");
         assert_eq!(lx.position, 1);
+    }
+
+    #[test]
+    fn lex_multibyte_char() {
+        let input = "😊+";
+        let mut lx = Lexer::new(input);
+
+        let chr = lx.next_char();
+        assert_eq!(chr, Some('😊'));
+        assert_eq!(lx.input, "+");
+        assert_eq!(lx.position, 4);
+
+        // ensure we correctly read the next character
+        let chr = lx.next_char();
+        assert_eq!(chr, Some('+'));
+        assert_eq!(lx.input, "");
+        assert_eq!(lx.position, 5);
+    }
+
+    #[test]
+    fn nop_accumulcate_while() {
+        let input = "    ";
+        let mut lx = Lexer::new(input);
+        let out = lx.accumulate_while(&is_valid_id);
+
+        assert_eq!(out, "");
+        assert_eq!(lx.input, input);
+        assert_eq!(lx.position, 0);
     }
 }
