@@ -47,7 +47,16 @@ impl<'a> Lexer<'a> {
             '+' => self.single_token(Token::Plus),
             '-' => self.single_token(Token::Minus),
             '*' => self.single_token(Token::Astrisk),
-            '/' => self.single_token(Token::Slash),
+            '/' => {
+                self.next_char();
+                match self.lookahead.peek() {
+                    Some('/') => {
+                        self.accumulate_while(&|x| !matches!(x, '\n'));
+                        self.next()
+                    }
+                    _ => self.single_token(Token::Slash),
+                }
+            }
             '%' => self.single_token(Token::Percent),
             '&' => self.single_token(Token::Ampsersand),
             '|' => self.single_token(Token::Pipe),
@@ -71,13 +80,14 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn lex_string(&mut self) -> Option<Token<'a>> {
-        // consume the initial quote
-        self.next_char();
         let mut size = 0;
         let mut closed = false;
 
+        // consume the initial quote
+        self.next_char();
+
         while let Some(chr) = self.lookahead.next() {
-            if matches!(chr, '"') { 
+            if matches!(chr, '"') {
                 closed = true;
                 break;
             }
@@ -129,7 +139,12 @@ mod tests {
         let lx = Lexer::new(input);
 
         let toks: Vec<Token> = lx.collect();
-        let expected = vec![Token::Identifier("func"), Token::Identifier("main"), Token::LParen, Token::RParen];
+        let expected = vec![
+            Token::Identifier("func"),
+            Token::Identifier("main"),
+            Token::LParen,
+            Token::RParen,
+        ];
         assert_eq!(toks, expected);
     }
 
@@ -139,7 +154,12 @@ mod tests {
         let lx = Lexer::new(input);
 
         let toks: Vec<Token> = lx.collect();
-        let expected = vec![Token::Identifier("let"), Token::Identifier("str"), Token::Eq, Token::String("test")];
+        let expected = vec![
+            Token::Identifier("let"),
+            Token::Identifier("str"),
+            Token::Eq,
+            Token::String("test"),
+        ];
         assert_eq!(toks, expected);
     }
 
@@ -157,7 +177,7 @@ mod tests {
         let mut lx = Lexer::new(input);
 
         while let Some(_) = lx.lex_token() {
-            // noop 
+            // noop
         }
 
         // we subtract 1 since we don't ever really move past the input after everything
