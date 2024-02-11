@@ -183,4 +183,16 @@ mod tests {
         // we subtract 1 since we don't ever really move past the input after everything
         assert_eq!(lx.position, input.len() - 1);
     }
+
+    #[test]
+    fn test_comment() {
+        let input = "//comment commentating\ntest // test test";
+        let lx = Lexer::new(input);
+
+        let toks: Vec<Token> = lx.collect();
+        let expected = vec![
+            Token::Identifier("test"),
+        ];
+        assert_eq!(toks, expected);
+    }
 }
