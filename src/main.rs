@@ -4,8 +4,12 @@ use anyhow::Result;
 pub mod lexer;
 
 fn main() -> Result<()> {
-    let contents = std::fs::read_to_string("examples/test.cqo")?;
-    let lexer = Lexer::new(&contents);
+    let contents = std::fs::read_to_string("examples/ident.cqo")?;
+    let mut lexer = Lexer::new(&contents);
+
+    while let Some(token) = lexer.lex_token() {
+        println!("{token:?}");
+    }
 
     Ok(())
 }
