@@ -39,7 +39,7 @@ impl<'a> Lexer<'a> {
 
     /// Get the next `n` characters, returning the entire remaining input if `self.input.len() <=
     /// n`
-    pub fn next_chars(&mut self, n: usize) -> &str {
+    pub fn next_chars(&mut self, n: usize) -> &'a str {
         if self.input.len() <= n {
             let out = self.input;
             self.position += self.input.len();
@@ -49,6 +49,7 @@ impl<'a> Lexer<'a> {
 
         self.position += n;
         // Split the input at the specified size
+        // TODO: Check if we split into a multi-byte character
         let (accumulated, rest) = self.input.split_at(n);
         // Consume the accumulated characters
         self.input = rest;

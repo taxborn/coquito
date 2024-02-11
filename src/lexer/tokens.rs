@@ -50,4 +50,5 @@ pub enum Token<'a> {
     LessThan,
     
     Identifier(&'a str),
+    String(&'a str),
 }

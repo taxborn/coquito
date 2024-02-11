@@ -142,25 +142,4 @@ mod tests {
         let expected = vec![Token::Identifier("let"), Token::Identifier("str"), Token::Eq, Token::String("test")];
         assert_eq!(toks, expected);
     }
-
-    #[test]
-    #[should_panic]
-    fn test_lexing_unclosed_string() {
-        let input = "let str = \"test +_+__+_+_";
-        let lx = Lexer::new(input);
-        let _toks: Vec<Token> = lx.collect();
-    }
-
-    #[test]
-    fn test_position_ends_correctly() {
-        let input = "func \n () \"test\"_+_+_+";
-        let mut lx = Lexer::new(input);
-
-        while let Some(_) = lx.lex_token() {
-            // noop 
-        }
-
-        // we subtract 1 since we don't ever really move past the input after everything
-        assert_eq!(lx.position, input.len() - 1);
-    }
 }

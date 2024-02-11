@@ -1,1 +1,3 @@
-func main() : int = ()
+func main() : int = {
+    let str : string = "test string";
+}
