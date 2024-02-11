@@ -51,4 +51,5 @@ pub enum Token<'a> {
     
     Identifier(&'a str),
     String(&'a str),
+    Number(&'a str),
 }

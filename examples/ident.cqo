@@ -1,4 +1,0 @@
-// This is a test comment
-func main() : int = {
-    let str : string = "test string"; // Test
-}
