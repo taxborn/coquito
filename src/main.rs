@@ -8,7 +8,7 @@ pub mod parser;
 fn main() -> Result<()> {
     let contents = std::fs::read_to_string("examples/simple.cqo")?;
     let lexer = Lexer::new(&contents);
-    let parser = Parser::new(lexer.collect());
+    let parser = Parser::new(lexer);
 
     parser.parse();
 
