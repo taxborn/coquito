@@ -64,9 +64,7 @@ impl<'a> Lexer<'a> {
             '>' => self.single_token(Token::GreaterThan),
             '<' => self.single_token(Token::LessThan),
             '"' => self.lex_string(),
-            c if c.is_numeric() => {
-                Some(Token::Number(self.accumulate_while(&|x| x.is_numeric())))
-            }
+            c if c.is_numeric() => Some(Token::Number(self.accumulate_while(&|x| x.is_numeric()))),
             c if is_valid_id_start(*c) => {
                 Some(Token::Identifier(self.accumulate_while(&is_valid_id)))
             }
@@ -194,9 +192,7 @@ mod tests {
         let lx = Lexer::new(input);
 
         let toks: Vec<Token> = lx.collect();
-        let expected = vec![
-            Token::Identifier("test"),
-        ];
+        let expected = vec![Token::Identifier("test")];
         assert_eq!(toks, expected);
     }
 

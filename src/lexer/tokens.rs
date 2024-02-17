@@ -48,7 +48,7 @@ pub enum Token<'a> {
     GreaterThan,
     /// <
     LessThan,
-    
+
     Identifier(&'a str),
     String(&'a str),
     Number(&'a str),
