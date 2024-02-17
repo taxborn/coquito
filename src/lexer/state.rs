@@ -88,9 +88,8 @@ impl<'a> Lexer<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::lexer::is_valid_id;
-
     use super::*;
+    use crate::lexer::is_valid_id;
 
     #[test]
     #[should_panic]
