@@ -16,7 +16,7 @@ digit = "0" | non_zero_digit ;
 // Main grammar
 program = { statement } ;
 
-number = non_zero_digit { digit } ;
+number = non_zero_digit ( digit ) ;
 
 identifier = ( letter | "_" ) { letter | digit | "_" } ;
 
@@ -25,3 +25,5 @@ type = "int" | "string" // TODO
 // for variables, for now, types are required. none of this inferred
 // typing bullshit
 variable = "let" identifier ":" type "=" expression ";" ;
+// when hell freezes over, the below will be enabled
+// variable = "let" identifier ":" ( type ) "=" expression ";" ;
