@@ -1,15 +1,16 @@
-use crate::lexer::state::Lexer;
 use anyhow::Result;
+use lexer::state::Lexer;
+use parser::state::Parser;
 
 pub mod lexer;
+pub mod parser;
 
 fn main() -> Result<()> {
-    let contents = std::fs::read_to_string("examples/test.cqo")?;
-    let mut lexer = Lexer::new(&contents);
+    let contents = std::fs::read_to_string("examples/simple.cqo")?;
+    let lexer = Lexer::new(&contents);
+    let parser = Parser::new(lexer.collect());
 
-    while let Some(token) = lexer.lex_token() {
-        println!("{token:?}");
-    }
+    parser.parse();
 
     Ok(())
 }
