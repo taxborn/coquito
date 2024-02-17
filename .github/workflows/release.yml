@@ -1,0 +1,150 @@
+# TODO: Eventually I want this to run on every push to main, 
+# but I'm doing that too frequently rn for it to be useful
+on:
+  workflow_dispatch:
+
+name: release
+
+env:
+  CARGO_TERM_COLOR: always
+  VERSION: v0.1.${{ github.run_number }}
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@stable
+      
+      # https://stackoverflow.com/questions/52176130/how-to-tell-cargo-to-use-git-tags-to-determine-the-crate-version
+      - name: Set Cargo.toml version
+        shell: bash
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          mv Cargo.toml Cargo.toml.orig
+          sed "s/0\\.0\\.0-git/${VERSION#v}/" Cargo.toml.orig >Cargo.toml
+          mv Cargo.lock Cargo.lock.orig
+          sed "s/0\\.0\\.0-git/${VERSION#v}/" Cargo.lock.orig >Cargo.lock
+
+      - name: cargo build
+        run: cargo build --release --target x86_64-pc-windows-msvc
+      
+      - name: move binary
+        shell: pwsh
+        run: Rename-Item -Path ".\target\x86_64-pc-windows-msvc\release\coquito.exe" -NewName "coquito-${{ env.VERSION }}.exe"
+      
+      - name: upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coquito-win-${{ env.VERSION }}
+          path: target/x86_64-pc-windows-msvc/release/coquito-${{ env.VERSION }}.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@stable
+      
+      # https://stackoverflow.com/questions/52176130/how-to-tell-cargo-to-use-git-tags-to-determine-the-crate-version
+      - name: Set Cargo.toml version
+        shell: bash
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          mv Cargo.toml Cargo.toml.orig
+          sed "s/0\\.0\\.0-git/${VERSION#v}/" Cargo.toml.orig >Cargo.toml
+          mv Cargo.lock Cargo.lock.orig
+          sed "s/0\\.0\\.0-git/${VERSION#v}/" Cargo.lock.orig >Cargo.lock
+
+      - name: cargo build
+        run: cargo build --release --target x86_64-apple-darwin
+      
+      - name: move binary
+        shell: bash
+        run: mv target/x86_64-apple-darwin/release/coquito target/x86_64-apple-darwin/release/coquito-${{ env.VERSION }}
+      
+      - name: upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coquito-macos-${{ env.VERSION }}
+          path: target/x86_64-apple-darwin/release/coquito-${{ env.VERSION }}
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@stable
+      
+      # https://stackoverflow.com/questions/52176130/how-to-tell-cargo-to-use-git-tags-to-determine-the-crate-version
+      - name: Set Cargo.toml version
+        shell: bash
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          mv Cargo.toml Cargo.toml.orig
+          sed "s/0\\.0\\.0-git/${VERSION#v}/" Cargo.toml.orig >Cargo.toml
+          mv Cargo.lock Cargo.lock.orig
+          sed "s/0\\.0\\.0-git/${VERSION#v}/" Cargo.lock.orig >Cargo.lock
+
+      - name: cargo build
+        run: cargo build --release --target x86_64-unknown-linux-gnu
+      
+      - name: move binary
+        shell: bash
+        run: mv target/x86_64-unknown-linux-gnu/release/coquito target/x86_64-unknown-linux-gnu/release/coquito-${{ env.VERSION }}
+      
+      - name: upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coquito-linux-${{ env.VERSION }}
+          path: target/x86_64-unknown-linux-gnu/release/coquito-${{ env.VERSION }}
+      
+  release:
+    runs-on: ubuntu-latest
+    needs: [ build-windows, build-macos, build-linux ]
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: coquito-win-${{ env.VERSION }}
+      
+      - name: Move Windows artifact
+        shell: bash
+        run: mv coquito-${{ env.VERSION }}.exe coquito-win-${{ env.VERSION }}.exe
+
+      - name: Download MacOS artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: coquito-macos-${{ env.VERSION }}
+      
+      - name: Move MacOS artifact
+        shell: bash
+        run: mv coquito-${{ env.VERSION }} coquito-macos-${{ env.VERSION }}
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: coquito-linux-${{ env.VERSION }}
+
+      - name: Move Linux artifact
+        shell: bash
+        run: mv coquito-${{ env.VERSION }} coquito-linux-${{ env.VERSION }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          files: |
+            coquito-win-${{ env.VERSION }}.exe
+            coquito-macos-${{ env.VERSION }}
+            coquito-linux-${{ env.VERSION }}
+          # For now, we are denoting releases as a prerelease
+          prerelease: true
+      
