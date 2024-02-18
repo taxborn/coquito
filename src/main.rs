@@ -10,7 +10,7 @@ fn main() -> Result<()> {
     let lexer = Lexer::new(&contents);
     let parser = Parser::new(lexer);
 
-    parser.parse();
+    parser.parse_term();
 
     Ok(())
 }
