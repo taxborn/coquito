@@ -77,7 +77,6 @@ jobs:
           name: coquito-macos-${{ env.VERSION }}
           path: target/x86_64-apple-darwin/release/coquito-${{ env.VERSION }}
 
-  # TODO: Figure out why tf Linux binaries are 10-30x the size of other platforms
   build-linux:
     runs-on: ubuntu-latest
     steps:
