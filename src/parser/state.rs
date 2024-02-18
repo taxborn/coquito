@@ -66,7 +66,12 @@ mod tests {
         let parser = create_parser();
 
         assert_eq!(parser.current, Some(Token::Identifier("let")));
-        let remaining = vec![Token::Identifier("_"), Token::Eq, Token::Number("5"), Token::Semi];
+        let remaining = vec![
+            Token::Identifier("_"),
+            Token::Eq,
+            Token::Number("5"),
+            Token::Semi,
+        ];
         assert_eq!(parser.tokens, remaining);
     }
 
