@@ -30,7 +30,7 @@ impl<'a> Lexer<'a> {
     pub fn lex_token(&mut self) -> Option<Token<'a>> {
         let chr = self.lookahead.peek()?;
 
-        return match chr {
+        match chr {
             '(' => self.single_token(Token::LParen),
             ')' => self.single_token(Token::RParen),
             '[' => self.single_token(Token::LBracket),
@@ -77,7 +77,7 @@ impl<'a> Lexer<'a> {
                 self.next()
             }
             _ => None,
-        };
+        }
     }
 
     pub fn lex_string(&mut self) -> Option<Token<'a>> {
@@ -87,11 +87,12 @@ impl<'a> Lexer<'a> {
         // consume the initial quote
         self.next_char();
 
-        while let Some(chr) = self.lookahead.next() {
+        for chr in self.lookahead.by_ref() {
             if matches!(chr, '"') {
                 closed = true;
                 break;
             }
+
             size += chr.len_utf8();
         }
 
