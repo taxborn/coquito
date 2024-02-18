@@ -8,3 +8,10 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 clap = { version = "4.4.7", features = ["derive"] }
+
+[profile.release]
+strip = true
+lto = true
+opt-level = "z"  # Optimize for size.
+codegen-units = 1
+panic = "abort"
