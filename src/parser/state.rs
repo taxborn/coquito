@@ -1,9 +1,10 @@
 use crate::lexer::{state::Lexer, tokens::Token};
 use crate::parser::ast::ASTNode;
 
+#[derive(Debug)]
 pub struct Parser<'a> {
     tokens: Vec<Token<'a>>,
-    current: Option<Token<'a>>,
+    pub current: Option<Token<'a>>,
 }
 
 impl<'a> Parser<'a> {
@@ -13,7 +14,7 @@ impl<'a> Parser<'a> {
     // make the lexer a part of the parser struct.
     pub fn new(lexer: Lexer<'a>) -> Self {
         let mut toks: Vec<Token<'a>> = lexer.collect();
-        // TODO: Bounds checks
+
         let first = if toks.is_empty() {
             None
         } else {
@@ -26,27 +27,37 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_term(&self) -> Option<ASTNode> {
+    /// Parse a term according to the `grammar.ebnf`.
+    pub fn parse_term(&mut self) -> Option<ASTNode> {
+        if self.eat(Token::Identifier("let")).is_some() {
+            // println!("parsing let statement");
+            return self.parse_let_statement();
+        }
+
+        // if self.eat(Token::Identifier("func")).is_some() {
+        //     self.parse_function();
+        // }
+
         None
     }
 
-    fn advance(&mut self) {
+    /// Eat the next token that we expect the input to be.
+    pub fn eat(&mut self, expected: Token<'a>) -> Option<Token<'a>> {
+        if matches!(self.current.as_ref(), Some(tok) if tok == &expected) {
+            self.advance();
+            return Some(expected);
+        }
+
+        None
+    }
+
+    /// Helper function for the `eat()` method to ensure we advance the state
+    pub fn advance(&mut self) {
         self.current = if self.tokens.is_empty() {
             None
         } else {
             Some(self.tokens.remove(0))
         }
-    }
-
-    fn eat(&mut self, _expected: Token<'a>) -> Option<Token<'a>> {
-        if let Some(tok) = self.tokens.first() {
-            if matches!(tok, _expected) {
-                self.advance();
-                return Some(_expected);
-            }
-        }
-
-        None
     }
 }
 
