@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 clap = { version = "4.4.7", features = ["derive"] }
+clap-verbosity-flag = "2.2.0"
 
 [profile.release]
 strip = true

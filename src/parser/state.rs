@@ -1,3 +1,5 @@
+use clap_verbosity_flag::Verbosity;
+
 use crate::lexer::{state::Lexer, tokens::Token};
 use crate::parser::ast::ASTNode;
 
@@ -5,6 +7,7 @@ use crate::parser::ast::ASTNode;
 pub struct Parser<'a> {
     tokens: Vec<Token<'a>>,
     pub current: Option<Token<'a>>,
+    verbose: Verbosity,
 }
 
 impl<'a> Parser<'a> {
@@ -24,6 +27,23 @@ impl<'a> Parser<'a> {
         Self {
             tokens: toks,
             current: first,
+            verbose: Verbosity::new(0, 0),
+        }
+    }
+
+    pub fn new_with_debug(lexer: Lexer<'a>, verbose: Verbosity) -> Self {
+        let mut toks: Vec<Token<'a>> = lexer.collect();
+
+        let first = if toks.is_empty() {
+            None
+        } else {
+            Some(toks.remove(0))
+        };
+
+        Self {
+            tokens: toks,
+            current: first,
+            verbose,
         }
     }
 

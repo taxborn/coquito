@@ -1,8 +1,11 @@
 pub mod state;
 pub mod tokens;
 
+use clap_verbosity_flag::Level;
+
 use crate::lexer::state::Lexer;
 use crate::lexer::tokens::Token;
+use crate::utils::log;
 
 /// Checking if a given character is a whitespace character. Currently this
 /// this only checks '\r' and '\t', however there is a more exhaustive list
@@ -29,6 +32,8 @@ fn is_valid_id_start(chr: char) -> bool {
 impl<'a> Lexer<'a> {
     pub fn lex_token(&mut self) -> Option<Token<'a>> {
         let chr = self.lookahead.peek()?;
+
+        log(format!("Lexing character {chr}"), self.verbose.log_level(), Level::Debug);
 
         match chr {
             '(' => self.single_token(Token::LParen),
