@@ -33,8 +33,6 @@ impl<'a> Lexer<'a> {
     pub fn lex_token(&mut self) -> Option<Token<'a>> {
         let chr = self.lookahead.peek()?;
 
-        log(format!("Lexing character {chr}"), self.verbose.log_level(), Level::Debug);
-
         match chr {
             '(' => self.single_token(Token::LParen),
             ')' => self.single_token(Token::RParen),
@@ -112,6 +110,12 @@ impl<'a> Lexer<'a> {
     }
 
     fn single_token(&mut self, token: Token<'a>) -> Option<Token<'a>> {
+        log(
+            format!("[+] lexed token \"{token:?}\""),
+            &self.verbose,
+            Level::Debug,
+        );
+
         self.next_char();
         Some(token)
     }
