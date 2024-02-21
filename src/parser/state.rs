@@ -1,13 +1,14 @@
-use clap_verbosity_flag::Verbosity;
+use clap_verbosity_flag::{Level, Verbosity};
 
 use crate::lexer::{state::Lexer, tokens::Token};
 use crate::parser::ast::ASTNode;
+use crate::utils::log;
 
 #[derive(Debug)]
 pub struct Parser<'a> {
     tokens: Vec<Token<'a>>,
     pub current: Option<Token<'a>>,
-    verbose: Verbosity,
+    pub verbose: Verbosity,
 }
 
 impl<'a> Parser<'a> {
@@ -50,6 +51,12 @@ impl<'a> Parser<'a> {
     /// Parse a term according to the `grammar.ebnf`.
     pub fn parse_term(&mut self) -> Option<ASTNode> {
         if self.eat(Token::Identifier("let")).is_some() {
+            log(
+                format!("[+] let identifier encountered"),
+                &self.verbose,
+                Level::Info,
+            );
+
             // println!("parsing let statement");
             return self.parse_let_statement();
         }

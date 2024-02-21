@@ -67,9 +67,23 @@ impl<'a> Lexer<'a> {
             '>' => self.single_token(Token::GreaterThan),
             '<' => self.single_token(Token::LessThan),
             '"' => self.lex_string(),
-            c if c.is_numeric() => Some(Token::Number(self.accumulate_while(&|x| x.is_numeric()))),
+            c if c.is_numeric() => {
+                let numeric = self.accumulate_while(&|x| x.is_numeric());
+                log(
+                    format!("[+] lexed numeric \"{numeric}\""),
+                    &self.verbose,
+                    Level::Debug,
+                );
+                Some(Token::Number(numeric))
+            }
             c if is_valid_id_start(*c) => {
-                Some(Token::Identifier(self.accumulate_while(&is_valid_id)))
+                let id = self.accumulate_while(&is_valid_id);
+                log(
+                    format!("[+] lexed identifier \"{id}\""),
+                    &self.verbose,
+                    Level::Debug,
+                );
+                Some(Token::Identifier(id))
             }
             c if is_whitespace(*c) => {
                 self.accumulate_while(&is_whitespace);

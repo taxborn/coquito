@@ -14,7 +14,6 @@ pub mod utils;
 #[command(version, about)]
 struct Args {
     /// The file to compile (file.cqo)
-    #[arg(short, long)]
     file: PathBuf,
 
     // TODO: Make this useful

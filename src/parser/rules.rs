@@ -1,6 +1,8 @@
 use core::panic;
 
-use crate::{lexer::tokens::Token, parser::state::Parser};
+use clap_verbosity_flag::Level;
+
+use crate::{lexer::tokens::Token, parser::state::Parser, utils::log};
 
 use super::ast::ASTNode;
 
@@ -14,8 +16,6 @@ impl<'a> Parser<'a> {
         } else {
             panic!("Named identifier expected after `let`");
         };
-
-        // println!("\tparsed name {id}");
 
         // Ensure the next token is an equals sign and advance
         assert!(
@@ -31,11 +31,16 @@ impl<'a> Parser<'a> {
             panic!("type expected after `:`");
         };
 
+        log(
+            format!("  [-] type found \"{typ}\""),
+            &self.verbose,
+            Level::Debug,
+        );
+
         assert!(
             self.eat(Token::Eq).is_some(),
             "Expected equals after type assignment"
         );
-        // println!("\tparsed type {typ}");
 
         // Parse the value expression
         let val = if let Some(token) = self.current.take() {
@@ -49,15 +54,17 @@ impl<'a> Parser<'a> {
             panic!("Expected a value after '=' in let statement");
         };
 
-        // println!("\tparsed value {val:?}");
+        log(
+            format!("  [-] parsed value \"{val:?}\""),
+            &self.verbose,
+            Level::Debug,
+        );
 
         // Ensure the statement ends with a semicolon and advance
         assert!(
             self.eat(Token::Semi).is_some(),
             "Expected ';' at the end of let statement"
         );
-
-        // println!("\tparsed let statement");
 
         // Return the AST node with the identifier and value
         Some(ASTNode::Let(id, typ, val))
