@@ -1,8 +1,11 @@
 pub mod state;
 pub mod tokens;
 
+use clap_verbosity_flag::Level;
+
 use crate::lexer::state::Lexer;
 use crate::lexer::tokens::Token;
+use crate::utils::log;
 
 /// Checking if a given character is a whitespace character. Currently this
 /// this only checks '\r' and '\t', however there is a more exhaustive list
@@ -30,7 +33,7 @@ impl<'a> Lexer<'a> {
     pub fn lex_token(&mut self) -> Option<Token<'a>> {
         let chr = self.lookahead.peek()?;
 
-        return match chr {
+        match chr {
             '(' => self.single_token(Token::LParen),
             ')' => self.single_token(Token::RParen),
             '[' => self.single_token(Token::LBracket),
@@ -64,9 +67,23 @@ impl<'a> Lexer<'a> {
             '>' => self.single_token(Token::GreaterThan),
             '<' => self.single_token(Token::LessThan),
             '"' => self.lex_string(),
-            c if c.is_numeric() => Some(Token::Number(self.accumulate_while(&|x| x.is_numeric()))),
+            c if c.is_numeric() => {
+                let numeric = self.accumulate_while(&|x| x.is_numeric());
+                log(
+                    format!("[+] lexed numeric \"{numeric}\""),
+                    &self.verbose,
+                    Level::Debug,
+                );
+                Some(Token::Number(numeric))
+            }
             c if is_valid_id_start(*c) => {
-                Some(Token::Identifier(self.accumulate_while(&is_valid_id)))
+                let id = self.accumulate_while(&is_valid_id);
+                log(
+                    format!("[+] lexed identifier \"{id}\""),
+                    &self.verbose,
+                    Level::Debug,
+                );
+                Some(Token::Identifier(id))
             }
             c if is_whitespace(*c) => {
                 self.accumulate_while(&is_whitespace);
@@ -77,7 +94,7 @@ impl<'a> Lexer<'a> {
                 self.next()
             }
             _ => None,
-        };
+        }
     }
 
     pub fn lex_string(&mut self) -> Option<Token<'a>> {
@@ -87,11 +104,12 @@ impl<'a> Lexer<'a> {
         // consume the initial quote
         self.next_char();
 
-        while let Some(chr) = self.lookahead.next() {
+        for chr in self.lookahead.by_ref() {
             if matches!(chr, '"') {
                 closed = true;
                 break;
             }
+
             size += chr.len_utf8();
         }
 
@@ -106,6 +124,12 @@ impl<'a> Lexer<'a> {
     }
 
     fn single_token(&mut self, token: Token<'a>) -> Option<Token<'a>> {
+        log(
+            format!("[+] lexed token \"{token:?}\""),
+            &self.verbose,
+            Level::Debug,
+        );
+
         self.next_char();
         Some(token)
     }

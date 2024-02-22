@@ -1,5 +1,7 @@
 use std::{iter::Peekable, str::Chars};
 
+use clap_verbosity_flag::Verbosity;
+
 pub struct Lexer<'a> {
     /// The input of the Lexer. This will start by having the entire file loaded into the string,
     /// but will shrink as the characters get lexed.
@@ -9,6 +11,7 @@ pub struct Lexer<'a> {
     /// Holds the position of the next unread character
     // TODO: Convert this to keep track of line/column
     pub position: usize,
+    pub verbose: Verbosity,
 }
 
 impl<'a> Lexer<'a> {
@@ -22,6 +25,20 @@ impl<'a> Lexer<'a> {
             input,
             lookahead: input.chars().peekable(),
             position: 0,
+            verbose: Verbosity::new(0, 0),
+        }
+    }
+
+    pub fn new_with_debug(input: &'a str, verbose: Verbosity) -> Self {
+        if input.is_empty() {
+            panic!("Can't lex an empty input. For now.");
+        }
+
+        Self {
+            input,
+            lookahead: input.chars().peekable(),
+            position: 0,
+            verbose,
         }
     }
 
